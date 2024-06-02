@@ -10,11 +10,9 @@ import SwiftUI
 struct DetailedTicketSearchView: View {
     @Binding var departure: String
     @Binding var arrival: String
-    
-    @State private var showPlaceHolder: Bool = false
-    
     @Binding var arrivalIsChosen: Bool
     
+    @State private var showPlaceHolder: Bool = false
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
@@ -27,7 +25,6 @@ struct DetailedTicketSearchView: View {
             .padding(.top)
             .background(Colors.grey2)
             .foregroundColor(Colors.white)
-            
             .navigationDestination(isPresented: $showPlaceHolder) {
                 ComingSoonView()
             }
@@ -47,20 +44,59 @@ struct DetailedTicketSearchView: View {
     //MARK: - optionsButtons
     var optionsButtons: some View {
         HStack(alignment: .top) {
-            ActionButton(name: "Сложный маршрут", color: Colors.green, imageName: "route", action: { showPlaceHolder.toggle() })
+            ActionButton(name: "Сложный маршрут", 
+                         color: Colors.green,
+                         imageName: "route",
+                         action: { showPlaceHolder.toggle() })
             
-            ActionButton(name: "Куда угодно", color: Colors.blue, imageName: "world", action: { arrival = "Paris"
-                arrivalIsChosen.toggle()
-                dismiss() })
+            ActionButton(name: "Куда угодно", 
+                         color: Colors.blue,
+                         imageName: "world", 
+                         action: {
+                            arrival = Destination.cities.randomElement() ?? ""
+                            arrivalIsChosen.toggle()
+                            dismiss()
+                        })
             
-            ActionButton(name: "Выходные", color: Colors.darkBlue, imageName: "calendar", action: { showPlaceHolder.toggle() })
+            ActionButton(name: "Выходные", 
+                         color: Colors.darkBlue,
+                         imageName: "calendar",
+                         action: { showPlaceHolder.toggle() })
             
-            ActionButton(name: "Горячие билеты", color: Colors.orange, imageName: "fire", action: { showPlaceHolder.toggle() })
+            ActionButton(name: "Горячие билеты", 
+                         color: Colors.orange,
+                         imageName: "fire",
+                         action: { showPlaceHolder.toggle() })
+        }
+    }
+    
+    struct ActionButton: View {
+        let name: String
+        let color: Color
+        let imageName: String
+        
+        let action: () -> Void
+        
+        var body: some View {
+            Button {
+                action()
+            } label: {
+                VStack {
+                    ZStack{
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(color)
+                            .frame(width: 48, height: 48)
+                        Image(imageName)
+                    }
+                    Text(name)
+                        .font(Font.DesignSystem.text2)
+                }
+                .padding(.horizontal, 16)
+            }
         }
     }
     
     //MARK: - destinations
-    
     var destinations: some View { List {
         ForEach(Destination.examples, id: \.self) { destination in
             HStack {
@@ -93,42 +129,26 @@ struct DetailedTicketSearchView: View {
         var name: String
         var imageName: String
         
-        static var examples = [Destination(name: "Стамбул", imageName: "istanbul"), Destination(name: "Сочи", imageName: "sochi"), Destination(name: "Пхукет", imageName: "phuket")]
-    }
-    
-    struct ActionButton: View {
-        let name: String
-        let color: Color
-        let imageName: String
+        static var examples = [
+            Destination(name: "Стамбул", imageName: "istanbul"),
+            Destination(name: "Сочи", imageName: "sochi"),
+            Destination(name: "Пхукет", imageName: "phuket")]
         
-        let action: () -> Void
-        
-        var body: some View {
-            Button {
-                action()
-            } label: {
-                VStack  {
-                    ZStack{
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(color)
-                            .frame(width: 48, height: 48)
-                        Image(imageName)
-                        
-                    }
-                    Text(name)
-                        .font(Font.DesignSystem.text2)
-                }
-                .padding(16)
-            }
-        }
+        static var cities = [
+            "Лондон",
+            "Нью-Йорк",
+            "Санкт-Петербург",
+            "Ростов-на-Дону",
+            "Валенсия",
+            "Париж"]
     }
 }
 
-#Preview {
-    var departure = ""
-    var arrival = ""
-    var isChosen = false
-    
-    return DetailedTicketSearchView(departure: Binding(get: {departure}, set: {departure = $0}), arrival: Binding(get: {arrival}, set: {arrival = $0}), arrivalIsChosen: Binding(get: {isChosen}, set: {isChosen = $0}))
-        .preferredColorScheme(.dark)
-}
+//#Preview {
+//    var departure = ""
+//    var arrival = ""
+//    var isChosen = false
+//    
+//    return DetailedTicketSearchView(departure: Binding(get: {departure}, set: {departure = $0}), arrival: Binding(get: {arrival}, set: {arrival = $0}), arrivalIsChosen: Binding(get: {isChosen}, set: {isChosen = $0}))
+//        .preferredColorScheme(.dark)
+//}

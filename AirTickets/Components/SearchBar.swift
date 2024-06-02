@@ -101,7 +101,7 @@ struct SearchBar: View {
     }
     
     struct Search: View {
-        let destination: Binding<String>
+        var destination: Binding<String>
         let imageName: String?
         let placeholder: String
         let action: (() -> Void)?
@@ -116,18 +116,7 @@ struct SearchBar: View {
                     Image(name)
                 }
                 
-                TextField(placeholder, text: destination)
-                    .font(Font.DesignSystem.title3)
-                    .onTapGesture {
-                        if let action = onTapAction {
-                            action()
-                        }
-                    }
-                    .onSubmit {
-                        if let action = onSubmitAction {
-                            action()
-                        }
-                    }
+                destinationTextField
                 
                 if let buttonAction = action, let iconName = actionIconName  {
                     Spacer()
@@ -141,6 +130,29 @@ struct SearchBar: View {
             }
             .listRowBackground(Colors.grey4)
         }
+        
+        var destinationTextField: some View {
+            TextField(placeholder, text: destination)
+                .font(Font.DesignSystem.title3)
+                .onChange(of: destination.wrappedValue) { _, newValue in
+                    destination.wrappedValue = filterCyrillic(input: newValue)
+                }
+                .onTapGesture {
+                    if let action = onTapAction {
+                        action()
+                    }
+                }
+                .onSubmit {
+                    if let action = onSubmitAction {
+                        action()
+                    }
+                }
+        }
+        
+        func filterCyrillic(input: String) -> String {
+                let cyrillicCharacters = input.filter { $0.isCyrillic }
+                return String(cyrillicCharacters)
+            }
         
         init(destination: Binding<String>, 
              imageName: String?,
@@ -163,6 +175,11 @@ struct SearchBar: View {
     }
 }
 
+extension Character {
+    var isCyrillic: Bool {
+        return ("А"..."я").contains(self) || self == "ё" || self == "Ё"
+    }
+}
 
 //#Preview {
 //    SearchBar()

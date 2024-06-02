@@ -32,6 +32,17 @@ struct DatePickerView: View {
             }
         }
         .accentColor(Colors.blue)
+        .environment(\.locale, Locale(identifier: "ru_RU"))
+        .environment(\.calendar, Calendar(identifier: .gregorian).withLocale(Locale(identifier: "ru_RU")))
+        .padding()
+    }
+}
+
+extension Calendar {
+    func withLocale(_ locale: Locale) -> Calendar {
+        var calendar = self
+        calendar.locale = locale
+        return calendar
     }
 }
 

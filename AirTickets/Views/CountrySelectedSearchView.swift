@@ -9,7 +9,6 @@ import SwiftUI
 
 struct CountrySelectedSearchView: View {
     @StateObject var ticketOffers = TicketOffersViewModel()
-    
     @EnvironmentObject var router: NavigationRouter
     
     @Binding var departure: String
@@ -19,8 +18,6 @@ struct CountrySelectedSearchView: View {
     @State var returnDate: Date?
     @State private var showDataPickerForDeparture: Bool = false
     @State private var showDataPickerForReturn: Bool = false
-
-    //@State private var showDataPicker: CurrentDate = .departureDate
     
     @State private var isSubscribed: Bool = false
     
@@ -62,7 +59,7 @@ struct CountrySelectedSearchView: View {
             }
             .buttonStyle(greyButton())
         }
-        .padding()
+        .padding(.horizontal)
     }
     
     struct greyButton: ButtonStyle {
@@ -176,7 +173,7 @@ struct CountrySelectedSearchView: View {
                     Text(offer.title)
                         .italic()
                     Spacer()
-                    Text("\(offer.price.value) ₽ >")
+                    Text("\(offer.price.value.asCurrency()) ₽ >")
                         .foregroundStyle(Colors.blue)
                 }
                 .font(Font.DesignSystem.title4)

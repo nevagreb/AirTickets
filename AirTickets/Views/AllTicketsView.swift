@@ -122,7 +122,7 @@ struct AllTicketsView: View {
         
         var body: some View {
             VStack(alignment: .leading) {
-                Text("\(ticket.price.value) ₽")
+                Text("\(ticket.price.value.asCurrency()) ₽")
                     .font(Font.DesignSystem.title1)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 ticketDetailes

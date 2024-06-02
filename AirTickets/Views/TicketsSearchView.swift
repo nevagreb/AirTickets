@@ -7,15 +7,16 @@
 
 import SwiftUI
 
+let USER_DEFAULS_KEY = "destination"
+
 struct TicketsSearchView: View {
     @StateObject var viewModel = OffersViewModel()
     @StateObject var router = NavigationRouter()
     
-    @State private var departure: String = ""
+    @State private var departure: String = UserDefaults.standard.string(forKey: USER_DEFAULS_KEY) ?? ""
     @State private var arrival: String = ""
     
     @State private var showSheet: Bool = false
-    
     @State private var arrivalIsChosen: Bool = false
     
     var body: some View {
@@ -32,6 +33,7 @@ struct TicketsSearchView: View {
             }
             .onChange(of: arrivalIsChosen) {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    UserDefaults.standard.set(departure, forKey: USER_DEFAULS_KEY)
                     router.navigate(to: .countrySelected)
                 }
             }
@@ -67,7 +69,7 @@ struct TicketsSearchView: View {
                   dividerColor: Colors.white)
         .background(Colors.grey3)
         .cornerRadius(15)
-        .padding()
+        .padding(.top)
     }
     
     //MARK: - offersHeader
@@ -75,6 +77,7 @@ struct TicketsSearchView: View {
         Text("Музыкально отлететь")
             .font(Font.DesignSystem.title1)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top)
     }
     
     //MARK: - scrollOffers
@@ -83,7 +86,7 @@ struct TicketsSearchView: View {
             HStack {
                 ForEach(viewModel.offers) {offer in
                     OfferView(offer: offer)
-                        .padding(.trailing, 67)
+                        .padding(.trailing)
                 }
             }
         }
@@ -110,7 +113,7 @@ struct TicketsSearchView: View {
             HStack {
                 Image("airplane")
                     .foregroundColor(Colors.grey6)
-                Text("от \(offer.price.value) ₽")
+                Text("от \(offer.price.value.asCurrency()) ₽")
             }
         }
         
@@ -129,6 +132,21 @@ extension Image {
             .frame(width: 132, height: 133)
             .cornerRadius(16)
             .clipped()
+    }
+}
+
+extension Int {
+    func asCurrency() -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.groupingSeparator = " "
+        formatter.maximumFractionDigits = 0
+        formatter.locale = Locale(identifier: "ru_RU")
+        if let formattedValue = formatter.string(from: NSNumber(value: self)) {
+            return formattedValue
+        } else {
+            return "\(self)"
+        }
     }
 }
 

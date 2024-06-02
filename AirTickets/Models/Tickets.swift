@@ -81,7 +81,7 @@ struct TicketsResponse: Codable {
     var tickets: [Ticket]
 }
 
-struct ChosenData: Codable, Hashable, Equatable {
+struct ChosenData: Codable, Equatable, Hashable {
     var departure: String
     var arrival: String
     var date: Date
