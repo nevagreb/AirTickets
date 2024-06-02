@@ -9,44 +9,57 @@ import SwiftUI
 
 struct TicketsSearchView: View {
     @StateObject var viewModel = OffersViewModel()
+    @StateObject var router = NavigationRouter()
     
     @State private var departure: String = ""
     @State private var arrival: String = ""
     
     @State private var showSheet: Bool = false
     
+    @State private var arrivalIsChosen: Bool = false
+    
     var body: some View {
-        VStack {
-            Text("Поиск дешевых \n авиабилетов")
-                .font(Font.DesignSystem.title1)
-                .multilineTextAlignment(.center)
-            //Spacer()
-            
-            searchBar
-            //Spacer()
-            
-            Text("Музыкально отлететь")
-                .font(Font.DesignSystem.title1)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            
-            scrollOffers
-            Spacer()
-            Spacer()
-        }
-        .sheet(isPresented: $showSheet)  {
-            DetailedTicketSearchView(departure: departure)
-            
+        NavigationStack(path: $router.path) {
+            VStack {
+                searchHeader
+                searchBar
+                offersHeader
+                scrollOffers
+                Spacer()
+            }
+            .sheet(isPresented: $showSheet)  {
+                DetailedTicketSearchView(departure: $departure, arrival: $arrival, arrivalIsChosen: $arrivalIsChosen)
+            }
+            .onChange(of: arrivalIsChosen) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    router.navigate(to: .countrySelected)
+                }
+            }
+            .navigationDestination(for: NavigationRouter.Destination.self) { destination in
+                switch destination {
+                case .countrySelected: CountrySelectedSearchView(departure: $departure, arrival: $arrival)
+                case let .allTickets(for: data): AllTicketsView(departure: data.departure, arrival: data.arrival, date: data.date)
+                }
+            }
         }
         .onAppear {
             Task {
                 await viewModel.loadData()
             }
         }
-        
+        .environmentObject(router)
     }
     
+    //MARK: - searchHeader
+    var searchHeader: some View {
+        Text("Поиск дешевых \n авиабилетов")
+            .font(Font.DesignSystem.title1)
+            .multilineTextAlignment(.center)
+    }
+    
+    //MARK: - searchBar
     var searchBar: some View {
-        SearchBar(barImageName: "search",
+        SearchBar(barButtonName: "search",
                   departure: $departure,
                   arrival: $arrival,
                   arrivalOnTapAction: { showSheet = true },
@@ -57,6 +70,14 @@ struct TicketsSearchView: View {
         .padding()
     }
     
+    //MARK: - offersHeader
+    var offersHeader: some View {
+        Text("Музыкально отлететь")
+            .font(Font.DesignSystem.title1)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    //MARK: - scrollOffers
     var scrollOffers: some View {
         ScrollView(.horizontal) {
             HStack {
@@ -69,40 +90,34 @@ struct TicketsSearchView: View {
         .scrollIndicators(.hidden)
     }
     
-    
-}
-
-struct OfferView: View {
-    let offer: Offer
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+    struct OfferView: View {
+        let offer: Offer
+        
+        var body: some View {
+            VStack(alignment: .leading, spacing: 4) {
+                Image(String(offer.id))
+                    .imageModifier()
+                Text(offer.title)
+                    .font(Font.DesignSystem.title3)
+                Text(offer.town)
+                    .font(Font.DesignSystem.text2)
+                offerPrice
+                    .font(Font.DesignSystem.text2)
+            }
+        }
+        
+        var offerPrice: some View {
+            HStack {
+                Image("airplane")
+                    .foregroundColor(Colors.grey6)
+                Text("от \(offer.price.value) ₽")
+            }
+        }
+        
+        var thumbNailImage: some View {
             Image(String(offer.id))
                 .imageModifier()
-            
-            Text(offer.title)
-                .font(Font.DesignSystem.title3)
-            
-            Text(offer.town)
-                .font(Font.DesignSystem.text2)
-            
-            offerPrice
-                .font(Font.DesignSystem.text2)
-            
         }
-    }
-    
-    var offerPrice: some View {
-        HStack {
-            Image("airplane")
-                .foregroundColor(Colors.grey6)
-            Text("от \(offer.price.value) ₽")
-        }
-    }
-    
-    var thumbNailImage: some View {
-        Image(String(offer.id))
-            .imageModifier()
     }
 }
 
@@ -117,7 +132,7 @@ extension Image {
     }
 }
 
-#Preview {
-    TicketsSearchView()
-        .preferredColorScheme(.dark)
-}
+//#Preview {
+//    TicketsSearchView()
+//        .preferredColorScheme(.dark)
+//}

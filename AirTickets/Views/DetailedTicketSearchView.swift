@@ -8,57 +8,58 @@
 import SwiftUI
 
 struct DetailedTicketSearchView: View {
-    @State var departure: String = ""
-    @State var arrival: String = ""
+    @Binding var departure: String
+    @Binding var arrival: String
     
-    @State private var path = NavigationPath()
+    @State private var showPlaceHolder: Bool = false
+    
+    @Binding var arrivalIsChosen: Bool
+    
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        NavigationStack(path: $path) {
+        NavigationStack {
             VStack {
                 searchBar
-                
                 optionsButtons
-                    .navigationDestination(for: String.self) {_ in
-                        ComingSoonView()
-                    }
-                
                 destinations
-                
             }
             .padding(.top)
             .background(Colors.grey2)
             .foregroundColor(Colors.white)
+            
+            .navigationDestination(isPresented: $showPlaceHolder) {
+                ComingSoonView()
+            }
         }
         .presentationDragIndicator(.visible)
     }
     
+    //MARK: - searchBar
     var searchBar: some View {
         SearchBar(departure: $departure,
                   departureImageName: "airplane2",
                   arrival: $arrival,
                   arrivalImageName: "search",
-                  arrivalButtonAction: {arrival = ""})
+                  arrivalButtonAction: { arrival = "" }, arrivalOnSubmitAction: { arrivalIsChosen.toggle(); dismiss() })
     }
     
+    //MARK: - optionsButtons
     var optionsButtons: some View {
         HStack(alignment: .top) {
-            ActionButton(name: "Сложный маршрут", color: Colors.green, imageName: "route", action: { path.append("NewView") })
+            ActionButton(name: "Сложный маршрут", color: Colors.green, imageName: "route", action: { showPlaceHolder.toggle() })
             
-            ActionButton(name: "Куда угодно", color: Colors.blue, imageName: "world", action: { arrival = "Paris" })
+            ActionButton(name: "Куда угодно", color: Colors.blue, imageName: "world", action: { arrival = "Paris"
+                arrivalIsChosen.toggle()
+                dismiss() })
             
-            ActionButton(name: "Выходные", color: Colors.darkBlue, imageName: "calendar", action: { path.append("NewView") })
+            ActionButton(name: "Выходные", color: Colors.darkBlue, imageName: "calendar", action: { showPlaceHolder.toggle() })
             
-            ActionButton(name: "Горячие билеты", color: Colors.orange, imageName: "fire", action: { path.append("NewView") })
+            ActionButton(name: "Горячие билеты", color: Colors.orange, imageName: "fire", action: { showPlaceHolder.toggle() })
         }
     }
     
-    struct Destination: Hashable {
-        var name: String
-        var imageName: String
-        
-        static var examples = [Destination(name: "Стамбул", imageName: "istanbul"), Destination(name: "Сочи", imageName: "sochi"), Destination(name: "Пхукет", imageName: "phuket")]
-    }
+    //MARK: - destinations
     
     var destinations: some View { List {
         ForEach(Destination.examples, id: \.self) { destination in
@@ -77,6 +78,8 @@ struct DetailedTicketSearchView: View {
             }
             .onTapGesture {
                 arrival = destination.name
+                arrivalIsChosen.toggle()
+                dismiss()
             }
         }
         .listRowBackground(Colors.grey3)
@@ -85,36 +88,47 @@ struct DetailedTicketSearchView: View {
     .scrollContentBackground(.hidden)
     .background(Colors.grey2)
     }
-}
-
-struct ActionButton: View {
-    let name: String
-    let color: Color
-    let imageName: String
     
-    let action: () -> Void
+    struct Destination: Hashable {
+        var name: String
+        var imageName: String
+        
+        static var examples = [Destination(name: "Стамбул", imageName: "istanbul"), Destination(name: "Сочи", imageName: "sochi"), Destination(name: "Пхукет", imageName: "phuket")]
+    }
     
-    var body: some View {
-        Button {
-            action()
-        } label: {
-            VStack  {
-                ZStack{
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(color)
-                        .frame(width: 48, height: 48)
-                    Image(imageName)
-                    
+    struct ActionButton: View {
+        let name: String
+        let color: Color
+        let imageName: String
+        
+        let action: () -> Void
+        
+        var body: some View {
+            Button {
+                action()
+            } label: {
+                VStack  {
+                    ZStack{
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(color)
+                            .frame(width: 48, height: 48)
+                        Image(imageName)
+                        
+                    }
+                    Text(name)
+                        .font(Font.DesignSystem.text2)
                 }
-                Text(name)
-                    .font(Font.DesignSystem.text2)
+                .padding(16)
             }
-            .padding(16)
         }
     }
 }
 
 #Preview {
-    DetailedTicketSearchView()
+    var departure = ""
+    var arrival = ""
+    var isChosen = false
+    
+    return DetailedTicketSearchView(departure: Binding(get: {departure}, set: {departure = $0}), arrival: Binding(get: {arrival}, set: {arrival = $0}), arrivalIsChosen: Binding(get: {isChosen}, set: {isChosen = $0}))
         .preferredColorScheme(.dark)
 }

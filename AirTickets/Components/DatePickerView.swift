@@ -8,8 +8,7 @@
 import SwiftUI
 
 struct DatePickerView: View {
-    @Binding var date: Date?
-    @Binding var isPresented: Bool
+    @Binding var date: Date
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -17,7 +16,7 @@ struct DatePickerView: View {
             DatePicker(
                 "Choose date",
                 selection:  Binding(
-                    get: { date ?? Date() },
+                    get: { date },
                     set: { newValue in date = newValue }
                 ),
                 displayedComponents: .date
@@ -32,7 +31,7 @@ struct DatePickerView: View {
                 dismiss()
             }
         }
-        .accentColor(.white)
+        .accentColor(Colors.blue)
     }
 }
 

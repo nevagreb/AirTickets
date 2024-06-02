@@ -8,39 +8,56 @@
 import SwiftUI
 
 struct CountrySelectedSearchView: View {
-    @State var departure: String = ""
-    @State var arrival: String = ""
+    @StateObject var ticketOffers = TicketOffersViewModel()
+    
+    @EnvironmentObject var router: NavigationRouter
+    
+    @Binding var departure: String
+    @Binding var arrival: String
     
     @State var departureDate: Date = .now
     @State var returnDate: Date?
-    @State private var isDatePickerVisible: Bool = false
+    @State private var showDataPickerForDeparture: Bool = false
+    @State private var showDataPickerForReturn: Bool = false
+
+    //@State private var showDataPicker: CurrentDate = .departureDate
+    
+    @State private var isSubscribed: Bool = false
     
     var body: some View {
         VStack {
             searchBar
-            
             buttons
+            flightsList
+            allFlightsButton
+            subscriptionButton
+        }
+        .navigationBarBackButtonHidden(true)
+        .onAppear {
+            Task {
+                await ticketOffers.loadData()
+            }
         }
     }
     
+    //MARK: - Search bar
     var searchBar: some View {
         SearchBar(
-            barImageName: "arrow",
+            barButtonName: "arrow",
+            barButtonAction: { router.navigateBack() },
             departure: $departure,
             departureButtonAction: { String.swap(&departure, &arrival) },
             arrival: $arrival,
-            arrivalButtonAction: {arrival = ""})
+            arrivalButtonAction: { arrival = "" })
     }
-
+    
+    //MARK: - Buttons
     var buttons: some View {
-        ScrollView(.horizontal) {
+        ScrollView(.horizontal, showsIndicators: false) {
             HStack {
                 returnDateButton
-                
                 departureDateButton
-                
                 passengerNumberButton
-                
                 filterButton
             }
             .buttonStyle(greyButton())
@@ -59,67 +76,55 @@ struct CountrySelectedSearchView: View {
     }
     
     var filterButton: some View {
-        Button() {
-            
-        } label: {
+        Button(action: {}, label: {
             HStack {
                 Image("filter")
                     .resizable()
                     .frame(width: 16, height: 16)
                 Text("фильтры")
             }
-        }
+        })
     }
     
     var passengerNumberButton: some View {
-        Button() {
-
-        } label: {
+        Button(action: {}, label: {
             HStack {
                 Image("human")
                     .resizable()
                     .frame(width: 16, height: 16)
                 Text("1,эконом")
             }
-        }
+        })
     }
     
-    @ViewBuilder
     var returnDateButton: some View {
-        if let date = returnDate {
-            dateButton(of: Binding(
-                get: { date },
-                set: { newValue in returnDate = newValue }
-            ))
-        } else {
-            Button {
-                isDatePickerVisible.toggle()
-            } label: {
+        Button(action: {
+            showDataPickerForReturn.toggle()
+        }, label: {
+            if let date = returnDate {
+                formattedDateText(from: date)
+            } else {
                 HStack {
                     Image("plus")
                     Text("обратно")
                 }
             }
-            .sheet(isPresented: $isDatePickerVisible) {
-                DatePickerView(date: $returnDate, isPresented: $isDatePickerVisible)
-            }
+        })
+        .sheet(isPresented: $showDataPickerForReturn) {
+            DatePickerView(date: Binding(
+                get: { returnDate ?? .now },
+                set: { returnDate = $0 }))
         }
     }
     
     var departureDateButton: some View {
-        dateButton(of: $departureDate)
-    }
-    
-    func dateButton(of date: Binding<Date>) -> some View {
-        VStack {
-            Button(action: {
-                isDatePickerVisible.toggle()
-            }) {
-                formattedDateText(from: date.wrappedValue)
-            }
-            .sheet(isPresented: $isDatePickerVisible) {
-                DatePickerView(date: $returnDate, isPresented: $isDatePickerVisible)
-            }
+        Button(action: {
+            showDataPickerForDeparture.toggle()
+        }, label: {
+            formattedDateText(from: departureDate)
+        })
+        .sheet(isPresented: $showDataPickerForDeparture) {
+            DatePickerView(date: $departureDate)
         }
     }
     
@@ -134,6 +139,91 @@ struct CountrySelectedSearchView: View {
         }
         return Text(components[0]) + Text(", " + components[1]).foregroundColor(Colors.grey6)
     }
+    
+    enum CurrentDate {
+        case departureDate
+        case returnDate
+    }
+    
+    //MARK: - List
+    var flightsList: some View {
+        let colorArray: [Color] = [Colors.red, Colors.blue, Colors.white]
+        
+        return List {
+                Text("Прямые рельсы")
+                    .font(Font.DesignSystem.title2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                
+                ForEach(ticketOffers.offers.indices, id: \.self) {index in
+                    HStack {
+                        colorArray[index]
+                            .clipShape(Circle())
+                            .frame(width: 24)
+                        FlightItem(offer: ticketOffers.offers[index])
+                    }
+                }
+        }
+        .listRowBackground(Colors.grey2)
+        .listRowSeparatorTint(Colors.grey5)
+    }
+    
+    struct FlightItem: View {
+        let offer: TicketsOffer
+        
+        var body: some View {
+            VStack(alignment: .center) {
+                HStack {
+                    Text(offer.title)
+                        .italic()
+                    Spacer()
+                    Text("\(offer.price.value) ₽ >")
+                        .foregroundStyle(Colors.blue)
+                }
+                .font(Font.DesignSystem.title4)
+                
+                ScrollView(.horizontal, showsIndicators: false) {
+                    Text(offer.timeRange.joined(separator: " "))
+                        .font(Font.DesignSystem.text2)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                }
+            }
+        }
+    }
+    
+    //MARK: - allFlightsButton
+    var allFlightsButton: some View {
+        Button {
+            router.navigate(to: .allTickets(for: ChosenData(departure: departure, arrival: arrival, date: departureDate)))
+        } label: {
+            Text("Посмотреть все билеты")
+                .font(Font.DesignSystem.buttonText1)
+                .italic()
+                .foregroundStyle(Colors.white)
+        }
+        .padding()
+        .frame(maxWidth: .infinity)
+        .background(Colors.blue)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .padding()
+    }
+    
+    //MARK: - subscriptionButton
+    var subscriptionButton: some View {
+        HStack {
+            Image("bell")
+                .foregroundColor(Colors.blue)
+            Text("Подписка на цену")
+                .font(Font.DesignSystem.buttonText1)
+                .foregroundStyle(Colors.white)
+            Toggle("", isOn: $isSubscribed)
+        }
+        .padding()
+        .frame(maxWidth: .infinity)
+        .background(Colors.grey2)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .padding()
+    }
 }
 
 extension String {
@@ -144,7 +234,12 @@ extension String {
     }
 }
 
-#Preview {
-    CountrySelectedSearchView(departure: "Moscow", arrival: "Sochi")
-        .preferredColorScheme(.dark)
-}
+//#Preview {
+//    var departure = "Moscow"
+//    var arrival = "Sochi"
+//    
+//    return NavigationStack {
+//        CountrySelectedSearchView(departure: Binding(get: {departure}, set: {departure = $0}), arrival: Binding(get: {arrival}, set: {arrival = $0}))
+//            .preferredColorScheme(.dark)
+//    }
+//}

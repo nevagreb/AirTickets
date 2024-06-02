@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct SearchBar: View {
-    let barImageName: String?
+    let barButtonName: String?
+    let barButtonAction: (() -> Void)?
     
     let departure: Binding<String>
     let departureImageName: String?
@@ -22,15 +23,22 @@ struct SearchBar: View {
     let arrivalButtonAction: (() -> Void)?
     let arrivalButtonActionIcon: String
     let arrivalOnTapAction: (() -> Void)?
-    
+    let arrivalOnSubmitAction: (() -> Void)?
     
     let color: Color
     let dividerColor: Color
     
     var body: some View {
         HStack {
-            if let name = barImageName {
-                Image(name)
+            if let name = barButtonName {
+                Button {
+                    if let action = barButtonAction {
+                        action()
+                    }
+                } label: {
+                    Image(name)
+                        .foregroundColor(barButtonAction == nil ? .white : .blue)
+                }
             }
             
             VStack {
@@ -49,7 +57,7 @@ struct SearchBar: View {
                        placeholder: arrivalPlaceholder,
                        action: arrivalButtonAction,
                        actionIconName: arrivalButtonActionIcon,
-                       onTapAction: arrivalOnTapAction)
+                       onTapAction: arrivalOnTapAction, onSubmitAction: arrivalOnSubmitAction)
             }
         }
             .padding()
@@ -59,17 +67,20 @@ struct SearchBar: View {
             .padding()
     }
     
-    init(barImageName: String? = nil, 
+    init(barButtonName: String? = nil,
+         barButtonAction: ( () -> Void)? = nil,
          departure: Binding<String>,
          departureImageName: String? = nil,
          departureButtonAction: ( () -> Void)? = nil,
          arrival: Binding<String>, arrivalImageName: String? = nil,
          arrivalButtonAction: ( () -> Void)? = nil,
          arrivalOnTapAction: ( () -> Void)? = nil,
+         arrivalOnSubmitAction: (() -> Void)? = nil,
          color: Color = Colors.grey3,
          dividerColor: Color = Colors.grey5) {
         
-        self.barImageName = barImageName
+        self.barButtonName = barButtonName
+        self.barButtonAction = barButtonAction
         
         self.departure = departure
         self.departureImageName = departureImageName
@@ -83,6 +94,7 @@ struct SearchBar: View {
         self.arrivalButtonAction = arrivalButtonAction
         self.arrivalButtonActionIcon = "closeIcon"
         self.arrivalOnTapAction = arrivalOnTapAction
+        self.arrivalOnSubmitAction = arrivalOnSubmitAction
         
         self.color = color
         self.dividerColor = dividerColor
@@ -95,6 +107,7 @@ struct SearchBar: View {
         let action: (() -> Void)?
         let actionIconName: String?
         let onTapAction: (() -> Void)?
+        let onSubmitAction: (() -> Void)?
         let hideButton: Bool
         
         var body: some View {
@@ -104,9 +117,14 @@ struct SearchBar: View {
                 }
                 
                 TextField(placeholder, text: destination)
-                    .bold()
+                    .font(Font.DesignSystem.title3)
                     .onTapGesture {
                         if let action = onTapAction {
+                            action()
+                        }
+                    }
+                    .onSubmit {
+                        if let action = onSubmitAction {
                             action()
                         }
                     }
@@ -129,7 +147,8 @@ struct SearchBar: View {
              placeholder: String,
              action: ( () -> Void)?, 
              actionIconName: String? = nil,
-             onTapAction: ( () -> Void)? = nil,
+             onTapAction: ( () -> Void )? = nil,
+             onSubmitAction: ( () -> Void )? = nil,
              hideButton: Bool = true) {
             
             self.destination = destination
@@ -138,6 +157,7 @@ struct SearchBar: View {
             self.action = action
             self.actionIconName = actionIconName
             self.onTapAction = onTapAction
+            self.onSubmitAction = onSubmitAction
             self.hideButton = hideButton
         }
     }

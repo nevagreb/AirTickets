@@ -49,7 +49,7 @@ class TicketOffersViewModel: ObservableObject {
             let (data, _) = try await URLSession.shared.data(from: url)
             let decodedResponse = try JSONDecoder().decode(TicketOffersResponse.self, from: data)
             DispatchQueue.main.async {
-                self.offers = decodedResponse.ticketOffer
+                self.offers = decodedResponse.ticketsOffers
             }
         } catch {
             print("Invalid data: \(error)")
@@ -57,4 +57,26 @@ class TicketOffersViewModel: ObservableObject {
     }
 }
 
+class TicketsViewModel: ObservableObject {
+    @Published var tickets: [Ticket] = []
     
+    init() {
+    }
+    
+    func loadData() async {
+        guard let url = URL(string: "https://run.mocky.io/v3/670c3d56-7f03-4237-9e34-d437a9e56ebf") else {
+            print("Invalid URL")
+            return
+        }
+        
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            let decodedResponse = try JSONDecoder().decode(TicketsResponse.self, from: data)
+            DispatchQueue.main.async {
+                self.tickets = decodedResponse.tickets
+            }
+        } catch {
+            print("Invalid data: \(error)")
+        }
+    }
+}

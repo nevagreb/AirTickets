@@ -7,15 +7,15 @@
 
 import Foundation
 
+struct Price: Codable {
+    var value: Int
+}
+
 struct Offer: Identifiable, Codable {
     var id: Int
     var title: String
     var town: String
     var price: Price
-    
-    struct Price: Codable {
-        var value: Int
-    }
 }
 
 struct OffersResponse: Codable {

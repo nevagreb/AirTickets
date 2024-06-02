@@ -65,6 +65,49 @@ enum Colors {
         	light: UIColor(red: 1, green: 1, blue: 1, alpha: 1)
     	)
 	}
+    
+    static var blue: Color {
+        return color(
+            dark: UIColor(red: 0.1352083384990692, green: 0.38221561908721924, blue: 0.737500011920929, alpha: 1),
+            light: UIColor(red: 0.1352083384990692, green: 0.38221561908721924, blue: 0.737500011920929, alpha: 1)
+        )
+    }
+
+    static var darkBlue: Color {
+        return color(
+            dark: UIColor(red: 0, green: 0.258221834897995, blue: 0.49161452054977417, alpha: 1),
+            light: UIColor(red: 0, green: 0.258221834897995, blue: 0.49161452054977417, alpha: 1)
+        )
+    }
+
+    static var green: Color {
+        return color(
+            dark: UIColor(red: 0.2292708307504654, green: 0.38749998807907104, blue: 0.2323734015226364, alpha: 1),
+            light: UIColor(red: 0.2292708307504654, green: 0.38749998807907104, blue: 0.2323734015226364, alpha: 1)
+        )
+    }
+
+    static var darkGreen: Color {
+        return color(
+            dark: UIColor(red: 0.11739583313465118, green: 0.20416666567325592, blue: 0.12133997678756714, alpha: 1),
+            light: UIColor(red: 0.11739583313465118, green: 0.20416666567325592, blue: 0.12133997678756714, alpha: 1)
+        )
+    }
+
+    static var red: Color {
+        return color(
+            dark: UIColor(red: 1, green: 0.36666667461395264, blue: 0.36666667461395264, alpha: 1),
+            light: UIColor(red: 1, green: 0.36666667461395264, blue: 0.36666667461395264, alpha: 1)
+        )
+    }
+
+    static var orange: Color {
+        return color(
+            dark: UIColor(red: 0.9529411792755127, green: 0.4313725531101227, blue: 0.21176470816135406, alpha: 1),
+            light: UIColor(red: 0.9529411792755127, green: 0.4313725531101227, blue: 0.21176470816135406, alpha: 1)
+        )
+    }
+    
 }
 
 extension Colors {

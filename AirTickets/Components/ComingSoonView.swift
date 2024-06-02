@@ -12,14 +12,11 @@ struct ComingSoonView: View {
         VStack(spacing: 20) {
             Image(systemName: "gear")
                 .imageModifier()
-            
             Text("Раздел в разработке")
                 .font(Font.DesignSystem.title1)
-            
         }
         .foregroundColor(Colors.grey6)
     }
-    
 }
 
 #Preview {

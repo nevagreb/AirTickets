@@ -10,25 +10,19 @@ import Foundation
 struct TicketsOffer: Codable, Identifiable {
     var id: Int
     var title: String
-    private var time_range: [String]
-    
-    var timeRange: [String] {
-        get { time_range }
-        set { time_range = newValue }
-    }
-    
+    var timeRange: [String]
     var price: Price
     
-    struct Price: Codable {
-        var value: Int
+    enum CodingKeys: String, CodingKey {
+        case id, title, price
+        case timeRange = "time_range"
     }
 }
 
 struct TicketOffersResponse: Codable {
-    private var tickets_offers: [TicketsOffer]
+    var ticketsOffers: [TicketsOffer]
     
-    var ticketOffer: [TicketsOffer] {
-        get { tickets_offers }
-        set { tickets_offers = newValue }
+    enum CodingKeys: String, CodingKey {
+        case ticketsOffers = "tickets_offers"
     }
 }
