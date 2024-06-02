@@ -177,7 +177,7 @@ struct SearchBar: View {
 
 extension Character {
     var isCyrillic: Bool {
-        return ("А"..."я").contains(self) || self == "ё" || self == "Ё"
+        return ("А"..."я").contains(self) || self == "ё" || self == "Ё" || self == "-"
     }
 }
 
